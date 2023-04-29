@@ -22,6 +22,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/Optimization.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Cache.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Linker.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/CompilerWarnings.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/ExposableOptions.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Tests.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Sanitizers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Doxygen.cmake")
@@ -89,6 +90,21 @@ macro(project_options)
     "${oneValueArgs}"
     "${multiValueArgs}"
     ${ARGN})
+
+  list(
+    APPEND
+    exposable_options
+    ${options}
+    ${oneValueArgs}
+    ${multiValueArgs})
+  list(REMOVE_ITEM exposable_options PREFIX)
+  foreach(option ${exposable_options})
+    if(${ProjectOptions_${option}} AND ${OPT_${option}})
+      message(WARNING "\"${option}\" defined both as static and exposed")
+    elseif(NOT ${ProjectOptions_${option}} AND ${OPT_${option}})
+      set(ProjectOptions_${option} ${OPT_${option}})
+    endif()
+  endforeach()
 
   # set warning message level
   if(${ProjectOptions_WARNINGS_AS_ERRORS})
